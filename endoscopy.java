@@ -1,3 +1,6 @@
+//link https://www.hackerearth.com/problem/algorithm/question-7-4/
+
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.*;

@@ -118,3 +118,115 @@ public class TestClass {
         }
     }
 }
+
+
+/*
+Upper solution is more optimized
+another readable solution down
+*/
+import java.util.*;
+class Solution{
+    public static void main(String args[]){
+        Scanner sc = new Scanner(System.in);
+        int tc = sc.nextInt();
+        HashMap<Integer,List<int[]>> move = new HashMap<>();
+        int[] up = {-1,0};
+        int[] right = {0,1};
+        int[] down = {1,0};
+        int[] left = {0,-1};
+        
+        move.put(1,new ArrayList<>());
+        List<int[]> curr = move.get(1);      
+        curr.add(up);
+        curr.add(right);
+        curr.add(down);
+        curr.add(left);
+        
+        move.put(2,new ArrayList<>());
+        curr = move.get(2);
+        curr.add(up);
+        curr.add(down);
+        
+        move.put(3,new ArrayList<>());
+        curr = move.get(3);
+        curr.add(left);
+        curr.add(right);
+        
+        move.put(4,new ArrayList<>());
+        curr = move.get(4);
+        curr.add(up);
+        curr.add(right);
+                 
+        move.put(5,new ArrayList<>());
+        curr = move.get(5);
+        curr.add(right);
+        curr.add(down);
+                 
+        move.put(6,new ArrayList<>());
+        curr = move.get(6);
+         curr.add(left);
+         curr.add(down);
+
+         move.put(7, new ArrayList<>());
+         curr = move.get(7);
+         curr.add(left);
+                 curr.add(up);
+                 
+                 
+                 
+                 
+                 
+        int[] res = new int[tc];
+        int resIdx = 0;
+        while(tc-->0){
+            int rows = sc.nextInt();
+            int cols = sc.nextInt();
+            int[][] grid = new int[rows][cols];
+            int startx = sc.nextInt();
+            int starty = sc.nextInt();
+            int maxDepth = sc.nextInt();
+            for(int i = 0; i<rows;i++){
+                for(int j = 0;j<cols; j++){
+                    grid[i][j] = sc.nextInt();
+                }
+            }
+            Queue<int[]> queue = new LinkedList<>();
+            queue.offer(new int[]{startx,starty});
+            int layer = 1;
+            int count = 0;
+            boolean[][] visited = new boolean[rows][cols];
+            visited[startx][starty] = true;
+            while(!queue.isEmpty() && layer<=maxDepth){
+                int size = queue.size();
+                count+=size;
+                //System.out.println(size);
+                for(int i = 0; i<size;i++){
+                    int[] current = queue.poll();
+                    for(int[] dir : move.get(grid[current[0]][current[1]])){
+                        int nx = current[0]+dir[0];
+                        int ny = current[1]+dir[1];
+                        if(isValid(nx,ny,rows,cols) && grid[nx][ny]!=0 && !visited[nx][ny]){
+                            int[] revDir = {-dir[0],-dir[1]};
+                            boolean reciprocal = false;
+                            for(int[] rev : move.get(grid[nx][ny])){
+                                if(rev[0]==revDir[0] && rev[1]==revDir[1])
+                                    reciprocal = true;
+                            }
+                            if(reciprocal){
+                                visited[nx][ny] = true;
+                                queue.offer(new int[]{nx,ny});
+                            }
+                        }
+                    }
+                }
+                layer++;
+            }
+            res[resIdx++] = count;
+        }
+                 for(int i = 0;i<resIdx;i++)
+                    System.out.println(res[i]);
+    }
+    public static boolean isValid(int i, int j,int rows,int cols){
+        return (i>=0 && j>=0 && i<rows && j<cols);
+    }
+}

@@ -1,5 +1,5 @@
 /*
-
+https://leetcode.com/problems/minimum-time-to-make-array-sum-at-most-x/
 
 Inventory Management:You are in charge of maintaining inventory for a warehouse.
 You have an initial stock of goods given by an array $A$ of size $N$.Your day starts 
@@ -42,7 +42,55 @@ Expected Standard Output:Plaintext#1 0
 
   */
 
+//in this we follow a pick and not pick approach 
+//we decide whether we want to choose to clear this stock at current day number
+//evem though it is a pick and not pick approach we sort it because 
+//we want to clear the item that is piling up quickly (>b value) at the last day possible
+//Essentially by sorting we fix the sequence otherwise it would have been a complex set of choices
+//multiple items and each item at diff day , so a lot of combinations. by sorting we eliminate one dimension of sorting
+class Solution {
+    public int minimumTime(List<Integer> nums1, List<Integer> nums2, int x) {
+        int n = nums1.size();
+        int suma =0;
+        int sumb = 0;
+        List<int[]> nums = new ArrayList<>();
+        for(int i = 0;i<n;i++){
+            nums.add(new int[]{nums1.get(i),nums2.get(i)});
+            suma+=nums1.get(i);
+            sumb+=nums2.get(i);
+        }
+        if(suma<=x)
+            return 0;
+        Collections.sort(nums,((a,b)->(b[1]-a[1])));
+        int[][] dp = new int[n+1][n+1];
+        for(int i = 0;i<=n;i++)
+            Arrays.fill(dp[i],-1);
+        for(int i = 1;i<=n;i++){
+            int rem = suma+sumb*i - solve(nums,0,i,dp);
+            if(rem<=x)
+                return i;
+        }
+        return -1;
 
+    }
+    public int solve(List<int[]> nums, int idx, int days,int[][] dp){
+        if(idx==nums.size())
+            return 0;
+        if(days == 0)
+            return 0;
+        if(dp[idx][days]!=-1)
+            return dp[idx][days];
+        int max = 0;
+        //choice 1 skip this 
+        max = Math.max(max,solve(nums,idx+1,days,dp));
+        //choice 2 we eliminate this at current day
+        max = Math.max(max,solve(nums,idx+1,days-1,dp)+nums.get(idx)[0]+nums.get(idx)[1]*days);
+        return dp[idx][days] = max;
+    }
+}
+
+
+/*
 
 import java.util.*;
 class Solution{
@@ -95,3 +143,5 @@ class Solution{
             System.out.println(res[i]);
     }
 }
+
+*/

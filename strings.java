@@ -16,7 +16,58 @@ Possible ?final? strings -> ?22?
 Ans = 2 (which is the length+ of ?22?)
 1 <= ai <=1e9.  1 <=N<= 1e5
 */
+//optimized solution
 
+import java.util.*;
+class Main{
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        String[] s = new String[n];
+        for (int i = 0; i < n; i++) {
+            s[i] = sc.next();
+        }
+        int maxLen = 0;
+        //dp[endchar][firstchar] : maximum len with given first and last char
+        int[][] dp = new int[10][10];
+        for(int[] row: dp)
+            Arrays.fill(row,-1);
+        for(int i = 0;i<n;i++){
+            int fc = s[i].charAt(0)-'0';
+            int len = s[i].length();
+            int lc = s[i].charAt(len-1)-'0';
+
+            int[] curr = new int[10];
+            Arrays.fill(curr,-1);
+            //curr[firstChar] = maxLength with this firstChar
+            //remember that we are appending this current string at the end
+            //choice 1: start a new string
+            curr[fc] = len;
+
+            //extend an existing string
+            for(int nfc = 0 ;nfc<10;nfc++){
+                if(dp[fc][nfc]!=-1)//starting at any char but ending at our first char
+                    curr[nfc] = Math.max(curr[nfc], dp[fc][nfc]+len);
+                    // dp[fc][nfc]+len : starting from any char but ending at our fc
+            }
+            //any chain that starts and ends with the same char
+            if(curr[lc]!=-1)
+                maxLen = Math.max(maxLen,curr[lc]);
+
+            //update dp with chains now ending at lc
+            for(int nfc = 0; nfc<10;nfc++){
+                if(curr[nfc]!=-1)
+                    dp[lc][nfc] = Math.max(dp[lc][nfc],curr[nfc]);
+            }
+        }
+        System.out.println(maxLen);
+    }
+}
+
+
+
+
+/*
 import java.util.*;
 class Main{
     public static void main(String args[]){
@@ -54,3 +105,4 @@ class Main{
         return max;
     }
 }
+*/

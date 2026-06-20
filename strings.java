@@ -15,55 +15,69 @@ Array of strings = [?14?, ?15?, ?89?, ?22?]
 Possible ?final? strings -> ?22?
 Ans = 2 (which is the length+ of ?22?)
 1 <= ai <=1e9.  1 <=N<= 1e5
+
+sample input :
+6
+14
+123
+323
+321
+421
+535
+
 */
 //optimized solution
-
 import java.util.*;
-class Main{
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        int n = sc.nextInt();
+import java.io.*;
+public class Samsung {
+    static BufferedReader br;
+    static StringTokenizer st;
+    static StringBuilder res;
+
+    public static void main(String[] args) throws IOException {
+        br = new BufferedReader(new InputStreamReader(System.in));
+        int t = 1;
+        res = new StringBuilder();
+        while (t-- > 0) {
+            fn();
+        }
+        System.out.println(res);
+    }
+
+    public static void fn() throws IOException {
+        int n = Integer.parseInt(br.readLine());
         String[] s = new String[n];
         for (int i = 0; i < n; i++) {
-            s[i] = sc.next();
+            s[i] = br.readLine();
         }
-        int maxLen = 0;
-        //dp[endchar][firstchar] : maximum len with given first and last char
         int[][] dp = new int[10][10];
-        for(int[] row: dp)
-            Arrays.fill(row,-1);
-        for(int i = 0;i<n;i++){
-            int fc = s[i].charAt(0)-'0';
-            int len = s[i].length();
-            int lc = s[i].charAt(len-1)-'0';
+        for (int i = 0; i < n; i++) {
+            int currStart = s[i].charAt(0) - '0';
+            int currEnd = s[i].charAt(s[i].length() - 1) - '0';
+            int currLen = s[i].length();
 
-            int[] curr = new int[10];
-            Arrays.fill(curr,-1);
-            //curr[firstChar] = maxLength with this firstChar
-            //remember that we are appending this current string at the end
-            //choice 1: start a new string
-            curr[fc] = len;
-
-            //extend an existing string
-            for(int nfc = 0 ;nfc<10;nfc++){
-                if(dp[fc][nfc]!=-1)//starting at any char but ending at our first char
-                    curr[nfc] = Math.max(curr[nfc], dp[fc][nfc]+len);
-                    // dp[fc][nfc]+len : starting from any char but ending at our fc
+            int[][] prev = new int[10][10];
+            for(int j = 0; j <10; j++){
+                prev[j] = Arrays.copyOf(dp[j],10);
             }
-            //any chain that starts and ends with the same char
-            if(curr[lc]!=-1)
-                maxLen = Math.max(maxLen,curr[lc]);
+            
+            //only the curr word
+            dp[currStart][currEnd] = Math.max(dp[currStart][currEnd], currLen);
 
-            //update dp with chains now ending at lc
-            for(int nfc = 0; nfc<10;nfc++){
-                if(curr[nfc]!=-1)
-                    dp[lc][nfc] = Math.max(dp[lc][nfc],curr[nfc]);
+            
+            //start from any number, end at currStart
+            for (int ns = 0; ns < 10; ns++) {
+                dp[ns][currEnd] = Math.max(dp[ns][currEnd],
+                        prev[ns][currStart] + currLen);
             }
         }
-        System.out.println(maxLen);
+        int max = 0;
+        for (int i = 0; i < 10; i++) {
+            max = Math.max(max, dp[i][i]);
+        }
+        res.append(max);
     }
 }
-
 
 
 

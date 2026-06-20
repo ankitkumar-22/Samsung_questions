@@ -69,79 +69,136 @@ answer
 
  */
 import java.util.*;
-import java.io.*;
-public class Samsung {
-    static BufferedReader br;
-    static StringTokenizer st;
-    static StringBuilder res;
-    public static void main(String[] args) throws IOException{
-        br= new BufferedReader(new InputStreamReader(System.in));
-        int t = Integer.parseInt(br.readLine());
-        res = new StringBuilder();
-        while(t-->0){
-            fn();
-        }
-        System.out.println(res);
+class Pair{
+    int x;
+    int y;
+    Pair(){}
+    Pair(int x, int y){
+        this.x = x;
+        this.y = y;
     }
-    public static void fn() throws IOException {
-        st = new StringTokenizer(br.readLine());
-        int qLen = Integer.parseInt(st.nextToken());
-        int pLen = Integer.parseInt(st.nextToken());
-        int[][] query = new int[qLen][2];
-        st = new StringTokenizer(br.readLine());
-        for(int i = 0;i<qLen;i++)
-            query[i][0] = Integer.parseInt(st.nextToken());
-        st = new StringTokenizer(br.readLine());
-        for(int i = 0;i<qLen;i++)
-            query[i][1] = Integer.parseInt(st.nextToken());
+}
+public class Main {
 
-        int[][] points = new int[pLen][2];
-        st = new StringTokenizer(br.readLine());
-        for(int i = 0;i<pLen;i++)
-            points[i][0]= Integer.parseInt(st.nextToken());
-        st = new StringTokenizer(br.readLine());
-        for(int i = 0;i<pLen;i++)
-            points[i][1] = Integer.parseInt(st.nextToken());
-
-        HashMap<Integer,int[]> xRange = new HashMap<>();
-        HashMap<Integer,int[]> yRange = new HashMap<>();
-
-        for(int i = 1;i<pLen;i++){
-            if(points[i][0]==points[i-1][0]){
-                if(!xRange.containsKey(points[i][0]))
-                    xRange.put(points[i][0],new int[]{Integer.MAX_VALUE,Integer.MIN_VALUE});
-                int[] arr = xRange.get(points[i][0]);
-                arr[0] = Math.min(arr[0],Math.min(points[i][1],points[i-1][1]));
-                arr[1] = Math.max(arr[1],Math.max(points[i][1],points[i-1][1]));
-                xRange.put(points[i][0],arr);
+    public static void main(String[] args){
+        Scanner sc = new Scanner(System.in);
+        int tc = sc.nextInt();
+        int[] res = new int[tc];
+        for(int t = 0;t<tc;t++){
+            int numQuery = sc.nextInt();
+            int numLines = sc.nextInt();
+            Pair[] query = new Pair[numQuery];
+            for(int i = 0;i<numQuery;i++){
+                query[i] = new Pair();
+                query[i].x = sc.nextInt();
             }
-            else{
-                //we are promised a continuous path thus one co-ord is bound to match
-                if(!yRange.containsKey(points[i][1]))
-                    yRange.put(points[i][1],new int[]{Integer.MAX_VALUE,Integer.MIN_VALUE});
-                int[] arr = yRange.get(points[i][1]);
-                arr[0] = Math.min(arr[0],Math.min(points[i][0],points[i-1][0]));
-                arr[1] = Math.max(arr[1],Math.max(points[i][0],points[i-1][0]));
-                yRange.put(points[i][1],arr);
+            for(int i = 0;i<numQuery;i++){
+                //query[i] = new Pair();
+                query[i].y = sc.nextInt();
             }
-        }
-
-        int count = 0;
-        for(int i = 0; i<qLen;i++){
-            if(xRange.containsKey(query[i][0])){
-                int[] range = xRange.get(query[i][0]);
-                if(query[i][1]>=range[0] && query[i][1]<=range[1]) {
-                    count++;
-                    continue;
+            
+            Pair[] lines = new Pair[numLines];
+            for(int i = 0;i<numLines;i++){
+                lines[i] = new Pair();
+                lines[i].x = sc.nextInt();
+            }
+            for(int i = 0;i<numLines;i++){
+                //lines[i] = new Pair();
+                lines[i].y = sc.nextInt();
+            }
+            //HashMap construction
+            HashMap<Integer,List<Pair>> xc = new HashMap<>();
+            HashMap<Integer,List<Pair>> yc = new HashMap<>();
+            for(int i = 0;i<numLines-1;i++){
+                if(lines[i].x==lines[i+1].x){
+                    if(!xc.containsKey(lines[i].x))
+                        xc.put(lines[i].x,new ArrayList<>());
+                    List<Pair> intervals = xc.get(lines[i].x);
+                    intervals.add(new Pair(Math.min(lines[i].y,lines[i+1].y),
+                            Math.max(lines[i].y,lines[i+1].y)));
+                }
+                if(lines[i].y==lines[i+1].y){
+                    if(!yc.containsKey(lines[i].y))
+                        yc.put(lines[i].y,new ArrayList<>());
+                    List<Pair> intervals = yc.get(lines[i].y);
+                    intervals.add(new Pair(Math.min(lines[i].x,lines[i+1].x),
+                            Math.max(lines[i].x,lines[i+1].x)));
                 }
             }
-            if(yRange.containsKey(query[i][1])){
-                int[] range = yRange.get(query[i][1]);
-                if(query[i][0]>=range[0] && query[i][0]<=range[1]){
-                    count++;
+            sort(xc);
+            sort(yc);
+            //print(xc);
+            // System.out.println();
+            // print(yc);
+            int count = 0;
+            for(int i = 0;i<numQuery;i++){
+                boolean inLine = false;
+                if(xc.containsKey(query[i].x)){
+                    inLine = binarySearchIntervals(xc.get(query[i].x),query[i].y);
                 }
+                if(!inLine && yc.containsKey(query[i].y)){
+                    inLine = binarySearchIntervals(yc.get(query[i].y),query[i].x);
+                }
+                if(inLine)
+                    count++;
+            }
+            res[t] = count;
+        }
+        for(int i = 0;i<tc;i++){
+            System.out.println(res[i]);
+        // System.out.println();
+        // System.out.println();
+        // System.out.println();
+        }
+        sc.close();
+    }
+    public static void sort(HashMap<Integer,List<Pair>> map){
+        for(int key : map.keySet()){
+            List<Pair> curr = map.get(key);
+            Collections.sort(curr,((a,b)->(a.x-b.x)));
+            List<Pair> next = new ArrayList<>();
+            int idx = 0;
+            Pair current = curr.get(idx);
+            while(idx<curr.size()){
+                current = curr.get(idx);
+                idx++;
+                while(idx<curr.size() && current.y>=curr.get(idx).x){
+                    int newStart = Math.min(current.x,curr.get(idx).x);
+                    int newEnd = Math.max(current.y,curr.get(idx).y);
+                    current = new Pair(newStart,newEnd);
+                    idx++;
+                }
+                next.add(current);
+                
+            }
+            map.put(key,next);
+        }
+    }
+    public static void print(HashMap<Integer,List<Pair>> map){
+        for(int key: map.keySet()){
+            System.out.println(key);
+            for(Pair intervals : map.get(key)){
+                System.out.println(intervals.x +" "+intervals.y);
             }
         }
-        res.append(count).append('\n');
+    }
+    // O(log K) Binary Search for checking if a value falls inside disjoint, sorted intervals
+    public static boolean binarySearchIntervals(List<Pair> intervals, int target) {
+        int left = 0;
+        int right = intervals.size() - 1;
+
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            Pair midInterval = intervals.get(mid);
+
+            if (target >= midInterval.x && target <= midInterval.y) {
+                return true; // Target is inside this interval
+            } else if (target < midInterval.x) {
+                right = mid - 1; // Target is to the left of this interval
+            } else {
+                left = mid + 1; // Target is to the right of this interval
+            }
+        }
+        return false;
     }
 }

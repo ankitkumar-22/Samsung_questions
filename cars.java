@@ -15,6 +15,59 @@ N range till 100
 similar question: https://leetcode.com/problems/reach-a-number/
 
 */
+//actual solution 
+
+    static void solve() throws IOException {
+        // your solution here
+        //int m = in.nextInt();
+        int n = in.nextInt();
+        long[][] grid = new long[n][2];
+        long maxDist = 0;
+        long prevDist = 0;
+        boolean flag = true;
+        long p = in.nextLong();
+        long q = in.nextLong();
+        for(int i = 0;i<n;i++){
+            grid[i][0] = in.nextLong();
+            grid[i][1] = in.nextLong();
+            long currDist = Math.abs(grid[i][0]-p)+Math.abs(grid[i][1]-q);
+            if(i>0 && prevDist%2!=currDist%2)
+                flag = false;
+            prevDist = currDist;
+            maxDist = Math.max(maxDist,currDist);
+        }
+        if(!flag) {
+            out.println(-1);
+            return;
+        }
+        long left = 0;
+        long right = (int)1e17;
+        long ans = -1;
+        while(left<=right){
+            long mid = left + (right-left)/2;
+            long sum = getSum(mid);
+            if(sum>=maxDist){
+                right = mid-1;
+                ans = mid;
+            }
+            else{
+                left = mid+1;
+            }
+        }
+
+        while((getSum(ans)-maxDist)%2!=0)
+            ans++;
+
+        out.println(ans);
+    }
+
+    public static long getSum(long n){
+        return (((long) n *(n+1))/2);
+    }
+
+
+
+//leetcode solution
 
 class Solution {
     public int reachNumber(int t) {

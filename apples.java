@@ -45,83 +45,100 @@ Constraints:
 - 2 ? M ? 150
 
 */
-
 import java.util.*;
 import java.io.*;
-class Solution{
-    static int n;
-    static int[][] applesLoc;
-    static int m;
+public class Samsung {
+    static BufferedReader br;
+    static StringTokenizer st;
+    static StringBuilder res;
     static int[][] grid;
+    static int[][][] dp;
+    static int n;
+
     public static void main(String[] args) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        int n = Integer.parseInt(br.readLine().trim());
-        grid = new int[n][n];
-        for(int i = 0;i<n;i++){
-            StringTokenizer st = new StringTokenizer(br.readLine());
-            for(int j = 0 ;j<n;j++){
-                grid[i][j] = Integer.parseInt(st.nextToken());
-                if(grid[i][j]>0)
-                    m++;
-            }
+        br = new BufferedReader(new InputStreamReader(System.in));
+        int t = Integer.parseInt(br.readLine());
+        res = new StringBuilder();
+        while (t-- > 0) {
+            fn();
         }
-        applesLoc = new int[m+1][2];
-        for(int i = 0;i<n;i++){
-            for(int j = 0;j<n;j++){
-                if(grid[i][j]>0){
-                    applesLoc[grid[i][j]][0] = i;
-                    applesLoc[grid[i][j]][1] = j;
-                }
-            }
-        }
-        int startx = 0;
-        int starty = 0;
-        int dir = 0;
-        int totalTurns = 0;
-        for(int i = 1;i<=m;i++){
-            int targetx = applesLoc[i][0];
-            int targety = applesLoc[i][1];
-            int[] res = bfs(startx,starty,targetx,targety,dir);
-            startx = targetx;
-            starty = targety;
-            dir = res[1];
-            totalTurns+=res[0];
-        }
-        System.out.println(totalTurns);
+        System.out.println(res);
     }
-    public static int[] bfs(int startx, int starty, int targetx, int targety, int dir){
-        ArrayDeque<int[]> queue = new ArrayDeque<>();
-        queue.offer(new int[]{startx,starty,dir,0});
-        int[][][] dist = new int[n][n][4];
-        for(int[][] row: dist) {
-            for(int[] subrow: row)
-                Arrays.fill(subrow, Integer.MAX_VALUE);
-        }
-        dist[startx][starty][dir]=0;
-        int[] dr = {0,1,0,-1};
-        int[] dc = {1,0,-1,0};
-        while(!queue.isEmpty()){
-            int r = queue.peek()[0];
-            int c = queue.peek()[1];
-            int d = queue.peek()[2];
-            int h = queue.poll()[3];
-            if(r==targetx && c==targety){
-                return new int[]{dist[r][c][d],d};
-            }
-            if(dist[r][c][d]<h)
-                continue;
-            int nx = r+dr[d];
-            int ny = c+dc[d];
-            if(nx>=0 && ny>=0 && nx<n && ny<n && grid[nx][ny]!=-1 && dist[nx][ny][d]>dist[r][c][d]){
-                dist[nx][ny][d] = dist[r][c][d];
-                queue.offerFirst(new int[]{nx,ny,d,dist[nx][ny][d]});
-            }
-            int nd = (d+1)%4;
-            if(dist[r][c][nd]>dist[r][c][d]+1){
-                dist[r][c][nd]=dist[r][c][d]+1;
-                queue.offerLast(new int[]{r,c,nd,dist[r][c][nd]});
-            }
-        }
-        return new int[]{-1,-1};
+
+    public static void fn() throws IOException {
+       n = Integer.parseInt(br.readLine());
+       grid = new int[n][n];
+       int numApples = -1;
+       for(int i = 0;i<n;i++){
+           st = new StringTokenizer(br.readLine());
+           for(int j = 0; j<n;j++){
+               grid[i][j] = Integer.parseInt(st.nextToken());
+               if(grid[i][j]>0)
+                   numApples = Math.max(grid[i][j],numApples);
+           }
+       }
+       int[][] applesLoc = new int[numApples+1][2];
+       for(int i = 0;i<n;i++){
+           for(int j = 0; j<n; j++){
+               if(grid[i][j]>0){
+                   applesLoc[grid[i][j]][0] = i;
+                   applesLoc[grid[i][j]][1] = j;
+               }
+           }
+       }
+
+       int[][][][] dist = new int[n][n][numApples+1][4];
+       for(int[][][] row: dist){
+           for(int[][] sr : row){
+               for(int[] ssr: sr){
+                   Arrays.fill(ssr,Integer.MAX_VALUE);
+               }
+           }
+       }
+       dist[0][0][1][0] = 0;
+
+       //PriorityQueue<int[]> pq = new PriorityQueue<>((a,b)->Integer.compare(a[3],b[3]));
+        Deque<int[]> pq = new ArrayDeque<>();
+       pq.offerFirst(new int[]{0,0,0,0,1});
+       int[] dx = {0,1,0,-1};
+       int[] dy = {1,0,-1,0};
+       while(!pq.isEmpty()){
+           int[] curr = pq.pollFirst();
+           int currx = curr[0];
+           int curry = curr[1];
+           int currDir = curr[2];
+           int currTurns = curr[3];
+           int currIdx = curr[4];
+           int d = dist[currx][curry][currIdx][currDir];
+//           if(dist[currx][curry][currIdx][currDir]<currTurns)
+//               continue;
+           if(currx == applesLoc[currIdx][0] && curry == applesLoc[currIdx][1]){
+               if(currIdx==numApples){
+                   res.append(d).append('\n');
+                   return;
+               }
+               if(dist[currx][curry][currIdx+1][currDir]>d) {
+                   dist[currx][curry][currIdx+1][currDir]=d;
+                   pq.offerFirst(new int[]{currx, curry, currDir, currTurns, currIdx + 1});
+               }
+               continue;
+           }
+
+           int nx = currx + dx[currDir];
+           int ny = curry + dy[currDir];
+           if(nx>=0 && ny>=0 && nx<n && ny<n && grid[nx][ny]!=-1){
+               if(dist[nx][ny][currIdx][currDir]>d){
+                   dist[nx][ny][currIdx][currDir]=d;
+                   pq.offerFirst(new int[]{nx,ny,currDir,currTurns,currIdx});
+               }
+           }
+
+           int nd = (currDir+1)%4;
+           if(dist[currx][curry][currIdx][nd]>d+1){
+               dist[currx][curry][currIdx][nd]=d+1;
+               pq.offerLast(new int[]{currx,curry,nd,currTurns+1,currIdx});
+           }
+       }
+       res.append(-1).append('\n');
     }
 }
